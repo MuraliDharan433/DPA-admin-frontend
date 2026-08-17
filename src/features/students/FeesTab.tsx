@@ -40,6 +40,8 @@ export function FeesTab({ student }: { student: Student }) {
   const { can } = usePermission();
   const queryClient = useQueryClient();
   const canEdit = can(PERMISSIONS.STUDENTS_EDIT);
+  // Deleting a payment rewrites the money trail - Owner-only unless explicitly granted.
+  const canDelete = can(PERMISSIONS.FEES_DELETE);
 
   const payments = [...(student.feePayments || [])].sort(
     (a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime(),
@@ -175,7 +177,7 @@ export function FeesTab({ student }: { student: Student }) {
                     {p.notes && <p className="mt-0.5 text-xs text-ink/45">{p.notes}</p>}
                   </td>
                   <td className="px-3 py-3 text-right">
-                    {canEdit && (
+                    {canDelete && (
                       <button
                         onClick={() => deleteMutation.mutate(p._id)}
                         className="rounded-lg p-1.5 text-ink/40 hover:bg-red-50 hover:text-red-600"
