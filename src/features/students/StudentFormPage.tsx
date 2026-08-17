@@ -42,6 +42,7 @@ const schema = z.object({
   courseStartDate: z.string().optional(),
   courseEndDate: z.string().optional(),
   trainingStatus: z.enum(['ENROLLED', 'ACTIVE', 'COMPLETED', 'DROPPED', 'ON_HOLD']),
+  totalFees: z.number().optional(),
   studentType: z.enum(['FRESHER', 'EXPERIENCED']),
   lastCompany: z.string().optional(),
   totalYearsExperience: z.number().optional(),
@@ -56,6 +57,10 @@ const schema = z.object({
 });
 
 type FormValues = z.infer<typeof schema>;
+
+/** A blank `valueAsNumber` input yields NaN, which serialises to null and fails server-side
+ *  validation. Send undefined instead so the field is simply omitted. */
+const num = (v: number | undefined) => (v === undefined || Number.isNaN(v) ? undefined : v);
 
 export function StudentFormPage({ studentId }: { studentId?: string }) {
   const isEdit = !!studentId;
@@ -104,6 +109,7 @@ export function StudentFormPage({ studentId }: { studentId?: string }) {
           courseStartDate: student.courseStartDate?.slice(0, 10) || '',
           courseEndDate: student.courseEndDate?.slice(0, 10) || '',
           trainingStatus: student.trainingStatus,
+          totalFees: student.totalFees,
           studentType: student.studentType || 'FRESHER',
           lastCompany: student.lastCompany || '',
           totalYearsExperience: student.totalYearsExperience,
@@ -140,11 +146,16 @@ export function StudentFormPage({ studentId }: { studentId?: string }) {
         skills: values.skills
           ? values.skills.split(',').map((s) => s.trim()).filter(Boolean)
           : [],
+        graduationYear: num(values.graduationYear),
+        percentage: num(values.percentage),
+        totalFees: num(values.totalFees),
         lastCompany: isExperienced ? values.lastCompany || undefined : undefined,
-        totalYearsExperience: isExperienced ? values.totalYearsExperience : undefined,
+        totalYearsExperience: isExperienced ? num(values.totalYearsExperience) : undefined,
         pfStatus: isExperienced && values.pfStatus ? values.pfStatus === 'YES' : undefined,
         workHistory: isExperienced
-          ? values.workHistory.filter((w) => w.company.trim())
+          ? values.workHistory
+              .filter((w) => w.company.trim())
+              .map((w) => ({ company: w.company, role: w.role || undefined, years: num(w.years) }))
           : [],
       };
       return isEdit ? studentsApi.update(studentId!, payload) : studentsApi.create(payload);
@@ -382,6 +393,19 @@ export function StudentFormPage({ studentId }: { studentId?: string }) {
             </Field>
             <Field label="Course End Date" htmlFor="courseEndDate">
               <Input id="courseEndDate" type="date" {...register('courseEndDate')} />
+            </Field>
+            <Field
+              label="Total Fees (₹)"
+              htmlFor="totalFees"
+              hint="Record individual payments on the student's Fees tab."
+            >
+              <Input
+                id="totalFees"
+                type="number"
+                min={0}
+                step="0.01"
+                {...register('totalFees', { valueAsNumber: true })}
+              />
             </Field>
           </CardBody>
         </Card>

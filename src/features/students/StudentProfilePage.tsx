@@ -23,6 +23,7 @@ import type { Course, Batch } from '@/types/academic.types';
 import { ResumeTab } from './ResumeTab';
 import { MockSessionsTab } from './MockSessionsTab';
 import { ProgressTab } from './ProgressTab';
+import { FeesTab } from './FeesTab';
 
 const TABS = [
   'Overview',
@@ -30,6 +31,7 @@ const TABS = [
   'Education',
   'Course',
   'Progress',
+  'Fees',
   'Experience',
   'Resume',
   'Mock Sessions',
@@ -211,6 +213,8 @@ export function StudentProfilePage({ studentId }: { studentId: string }) {
           )}
 
           {tab === 'Progress' && <ProgressTab student={student} />}
+
+          {tab === 'Fees' && <FeesTab student={student} />}
 
           {tab === 'Experience' && (
             <div className="space-y-4">

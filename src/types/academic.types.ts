@@ -54,6 +54,17 @@ export interface CompletedModule {
   completedAt: string;
 }
 
+export interface FeePayment {
+  _id: string;
+  amount: number;
+  term?: string;
+  account?: string;
+  paymentDate: string;
+  notes?: string;
+  recordedBy: { _id: string; firstName: string; lastName: string } | string;
+  recordedAt: string;
+}
+
 export interface Student {
   _id: string;
   studentId: string;
@@ -87,6 +98,8 @@ export interface Student {
   totalYearsExperience?: number;
   pfStatus?: boolean;
   workHistory: WorkHistoryEntry[];
+  totalFees?: number;
+  feePayments: FeePayment[];
   placementStatus: PlacementStatus;
   currentCompany?: string;
   jobTitle?: string;
